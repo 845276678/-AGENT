@@ -1,0 +1,11 @@
+﻿name: Bug Report
+about: Report a bug to help us improve
+labels: bug
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true

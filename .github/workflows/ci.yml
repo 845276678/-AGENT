@@ -1,0 +1,53 @@
+﻿name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r server/requirements.txt
+          pip install pytest schemathesis
+      - name: Run Python tests
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest -q
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install SDK deps and generate types
+        working-directory: sdk
+        run: |
+          npm ci || npm install
+          npm run gen
+      - name: Lint OpenAPI
+        run: npx @redocly/cli lint docs/api/openapi.yaml
+      - name: Start API server
+        run: |
+          nohup python -m uvicorn server.app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 2
+      - name: Schemathesis contract test
+        run: |
+          schemathesis run --checks all --base-url=http://localhost:8000/v1 docs/api/openapi.yaml

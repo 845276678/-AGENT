@@ -1,0 +1,10 @@
+﻿fastapi==0.115.0
+uvicorn[standard]==0.30.5
+pydantic>=2.7
+
+redis>=5.0.0
+
+prometheus-client>=0.20.0
+
+python-jose[cryptography]>=3.3.0
+requests>=2.32.0

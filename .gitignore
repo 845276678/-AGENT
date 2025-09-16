@@ -1,0 +1,25 @@
+﻿# Node/Next
+node_modules/
+.next/
+web/node_modules/
+web/.next/
+
+# Env
+.env
+web/.env.local
+
+# Python
+.venv/
+server/.venv/
+__pycache__/
+
+# Build/Dist
+sdk/dist/
+dist/
+coverage/
+
+# OS/IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
