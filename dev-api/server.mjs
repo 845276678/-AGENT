@@ -11,17 +11,7 @@ function json(res, obj, status = 200){
 
 function notFound(res){ res.writeHead(404); res.end('Not found'); }
 
-const store = {
-  products: [
-    { id: 'p1', name: '增值套餐 A', price: 9.9, currency: 'CNY' },
-    { id: 'p2', name: '增值套餐 B', price: 19.9, currency: 'CNY' },
-  ],
-  cart: { items: [], total: 0, currency: 'CNY' },
-  ideas: [],
-  agents: [],
-  profiles: { u_demo: { username: 'demo', bio: '', location: '' } },
-  wallet: { u_demo: { balance: 1000, currency: 'CNY' } }
-};
+const store = {,\n  walletHistory: {}\n};
 
 function recalc(){
   let t = 0; for (const it of store.cart.items) { const p = store.products.find(p => p.id === it.productId); if (p) t += p.price * it.quantity; it.product = p; }
@@ -71,9 +61,18 @@ const server = http.createServer(async (req, res) => {
   if (profileMatch && req.method === 'PUT') { const userId = profileMatch[1]; const body = await readJson(req); store.profiles[userId] = { ...(store.profiles[userId] || {}), ...body }; return json(res, {}); }
   const walletMatch = pathname?.match(/^\/v1\/users\/(.+?)\/wallet(\/deposit|\/withdraw)?$/);
   if (walletMatch && req.method === 'GET') { const userId = walletMatch[1]; const w = store.wallet[userId] || store.wallet.u_demo; return json(res, { wallet: w }); }
-  if (walletMatch && req.method === 'POST') { const userId = walletMatch[1]; const action = walletMatch[2]; const body = await readJson(req); const w = store.wallet[userId] || (store.wallet[userId] = { balance: 0, currency: 'CNY' }); const amt = Number(body.amount) || 0; if (action === '/deposit') w.balance += amt; if (action === '/withdraw') w.balance = Math.max(0, w.balance - amt); return json(res, {}); }
+  if (walletMatch && req.method === 'POST') {
+    const userId = walletMatch[1]; const action = walletMatch[2]; const body = await readJson(req);
+    const w = store.wallet[userId] || (store.wallet[userId] = { balance: 0, currency: 'CNY' });
+    const amt = Number(body.amount) || 0;
+    if (action === '/deposit') w.balance += amt;
+    if (action === '/withdraw') w.balance = Math.max(0, w.balance - amt);
+    const list = store.walletHistory[userId] || (store.walletHistory[userId] = []);
+    list.push({ id: 'h' + (list.length + 1), type: action === '/deposit' ? 'deposit' : 'withdraw', amount: amt, ts: Date.now() });
+    return json(res, {});
+  }
 
-  return notFound(res);
+    const histMatch = pathname?.match(/^\\/v1\\/users\\/(.+?)\\/wallet\\/history$/);\n  if (histMatch && req.method === 'GET') { const userId = histMatch[1]; const items = (store.walletHistory[userId] || []).slice().reverse(); return json(res, { items }); }\n\n  return notFound(res);
 });
 
 function readJson(req){

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { Input, Textarea } from '@/src/components/Inputs';
 import Button from '@/src/components/Button';
+import Spinner from '@/src/components/Spinner';
 import { ErrorAlert } from '@/src/components/States';
 import { required, minLength } from '@/src/lib/validate';
 
@@ -53,7 +54,9 @@ export default function ProfileEditor(){
         <div className="text-sm text-slate-500">个人简介</div>
         <Textarea rows={4} value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} />
       </div>
-      <Button disabled={saving || !!validate()}>{saving ? '保存中...' : '保存'}</Button>
+      <Button disabled={saving || !!validate()}>
+        {saving ? (<span className="inline-flex items-center gap-1"><Spinner size={14} /> 保存中...</span>) : '保存'}
+      </Button>
       {msg && <div className="text-sm text-green-600">{msg}</div>}
     </form>
   );
