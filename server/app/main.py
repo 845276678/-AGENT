@@ -42,36 +42,36 @@ class ApiEnvelope(dict):
         super().__init__(success=True, data=data)
 
 # --- Auth ---
-@app.post('/v1/auth/register', summary='用户注册')
+@app.post('/v1/auth/register', summary='stub')
 async def auth_register(payload: Dict[str, Any] = Body(...)):
     return ApiEnvelope({"user": {"id": "u_demo", "username": payload.get('username')}, "token": "demo.jwt"})
 
-@app.post('/v1/auth/login', summary='用户登录')
+@app.post('/v1/auth/login', summary='stub')
 async def auth_login(payload: Dict[str, Any] = Body(...)):
     return ApiEnvelope({"token": "demo.jwt"})
 
-@app.post('/v1/auth/refresh', summary='刷新令牌')
+@app.post('/v1/auth/refresh', summary='stub')
 async def auth_refresh():
     return ApiEnvelope({"token": "demo.jwt"})
 
-@app.get('/v1/auth/social/providers', summary='第三方登录可用提供方')
+@app.get('/v1/auth/social/providers', summary='stub')
 async def auth_social_providers():
     return ApiEnvelope({"providers": ["github", "google", "apple"]})
 
-@app.get('/v1/auth/social/{provider}', summary='第三方登录入口（重定向）')
+@app.get('/v1/auth/social/{provider}', summary='stub')
 async def auth_social_provider(provider: str = Path(...)):
     return ApiEnvelope({"provider": provider, "action": "redirect"})
 
-@app.get('/v1/auth/social/{provider}/callback', summary='第三方登录回调')
+@app.get('/v1/auth/social/{provider}/callback', summary='stub')
 async def auth_social_callback(provider: str = Path(...), code: Optional[str] = Query(None), state: Optional[str] = Query(None)):
     return ApiEnvelope({"provider": provider, "code": code, "state": state})
 
 # --- Users & Wallet ---
-@app.get('/v1/users/{userId}/profile', summary='获取用户资料')
+@app.get('/v1/users/{userId}/profile', summary='stub')
 async def users_get_profile(userId: str = Path(...)):
     return ApiEnvelope({"profile": {"username": "demo", "bio": "", "location": "", "avatarUrl": None}})
 
-@app.put('/v1/users/{userId}/profile', summary='更新用户资料')
+@app.put('/v1/users/{userId}/profile', summary='stub')
 async def users_update_profile(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):\n    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     from fastapi import HTTPException
     principal = getattr(request.state, 'principal', None) if request is not None else None\n    if principal and principal != userId:
@@ -80,18 +80,18 @@ async def users_update_profile(userId: str = Path(...), payload: Dict[str, Any] 
     return ApiEnvelope({})
 
 # --- Wallet ---
-@app.get('/v1/users/{userId}/wallet', summary='获取钱包信息')
+@app.get('/v1/users/{userId}/wallet', summary='stub')
 async def users_get_wallet(userId: str = Path(...)):
     return ApiEnvelope({"wallet": {"balance": 0, "currency": "CNY"}})
 
-@app.post('/v1/users/{userId}/wallet/deposit', summary='充值')
+@app.post('/v1/users/{userId}/wallet/deposit', summary='stub')
 async def users_wallet_deposit(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
     require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     WALLET_DEPOSIT_TOTAL.inc()
     audit('wallet.deposit', userId=userId, amount=payload.get('amount'))
     return ApiEnvelope({})
 
-@app.post('/v1/users/{userId}/wallet/withdraw', summary='提现')
+@app.post('/v1/users/{userId}/wallet/withdraw', summary='stub')
 async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
     require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     WALLET_WITHDRAW_TOTAL.inc()
@@ -102,101 +102,101 @@ async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any]
     WALLET_WITHDRAW_TOTAL.inc()
     return ApiEnvelope({})
 
-@app.get('/v1/users/{userId}/achievements', summary='获取用户成就')
+@app.get('/v1/users/{userId}/achievements', summary='stub')
 async def users_get_achievements(userId: str = Path(...)):
     return ApiEnvelope({"achievements": []})
 
-@app.get('/v1/users/quota', summary='当前用户额度')
+@app.get('/v1/users/quota', summary='stub')
 async def users_get_quota():
     return ApiEnvelope({"remaining": 0})
 
 # --- Ideas ---
-@app.get('/v1/ideas', summary='列举创意')
+@app.get('/v1/ideas', summary='stub')
 async def ideas_list(page: int = Query(1, ge=1), pageSize: int = Query(20, ge=1, le=200)):
     return ApiEnvelope({"items": [], "page": page, "pageSize": pageSize})
 
-@app.post('/v1/ideas', summary='提交创意（统一 by POST /v1/ideas）')
+@app.post('/v1/ideas', summary='stub')
 async def ideas_create(payload: Dict[str, Any] = Body(...)):
     IDEAS_SUBMITTED.inc()
     audit('ideas.create')
     return ApiEnvelope({"idea": {"id": "i_demo", "content": payload.get('content')}})
 
-@app.get('/v1/ideas/{ideaId}', summary='获取创意详情')
+@app.get('/v1/ideas/{ideaId}', summary='stub')
 async def ideas_get(ideaId: str = Path(...)):
     return ApiEnvelope({"idea": {"id": ideaId}})
 
-@app.put('/v1/ideas/{ideaId}', summary='更新创意（状态、内容等）')
+@app.put('/v1/ideas/{ideaId}', summary='stub')
 async def ideas_update(ideaId: str = Path(...), payload: Dict[str, Any] = Body(...)):
     audit('ideas.update', ideaId=ideaId)
     return ApiEnvelope({})
 
-@app.get('/v1/ideas/templates', summary='创意模板')
+@app.get('/v1/ideas/templates', summary='stub')
 async def ideas_templates(category: Optional[str] = Query(None), difficulty: Optional[str] = Query(None)):
     return ApiEnvelope({"templates": []})
 
 # --- Discussions ---
-@app.get('/v1/discussions', summary='查询讨论（可按 ideaId 过滤)')
+@app.get('/v1/discussions', summary='stub')
 async def discussions_list(ideaId: Optional[str] = Query(None)):
     return ApiEnvelope({"items": []})
 
-@app.post('/v1/discussions', summary='创建讨论')
+@app.post('/v1/discussions', summary='stub')
 async def discussions_create(payload: Dict[str, Any] = Body(...)):
     DISCUSSIONS_CREATED.inc()
     audit('discussions.create', ideaId=payload.get('ideaId'))
     return ApiEnvelope({"id": "d_demo"})
 
-@app.get('/v1/discussions/{ideaId}', summary='获取讨论详情')
+@app.get('/v1/discussions/{ideaId}', summary='stub')
 async def discussions_get(ideaId: str = Path(...)):
     return ApiEnvelope({"id": ideaId, "messages": []})
 
-@app.get('/v1/discussions/{ideaId}/messages', summary='拉取讨论消息')
+@app.get('/v1/discussions/{ideaId}/messages', summary='stub')
 async def discussions_list_messages(ideaId: str = Path(...), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100)):
     return ApiEnvelope({"items": [], "offset": offset, "limit": limit})
 
-@app.post('/v1/discussions/{ideaId}/messages', summary='发送消息到讨论')
+@app.post('/v1/discussions/{ideaId}/messages', summary='stub')
 async def discussions_post_message(ideaId: str = Path(...), payload: Dict[str, Any] = Body(...)):
     MESSAGES_POSTED.inc()
     audit('discussions.message', ideaId=ideaId)
     return ApiEnvelope({})
 
 # --- Agents ---
-@app.get('/v1/agents', summary='列举 Agent')
+@app.get('/v1/agents', summary='stub')
 async def agents_list():
     return ApiEnvelope({"items": []})
 
-@app.get('/v1/agents/{agentId}', summary='Agent 详情')
+@app.get('/v1/agents/{agentId}', summary='stub')
 async def agents_get(agentId: str = Path(...)):
     return ApiEnvelope({"id": agentId})
 
-@app.post('/v1/agents/predict-interest', summary='预测 Agent 对创意兴趣')
+@app.post('/v1/agents/predict-interest', summary='stub')
 async def agents_predict_interest(payload: Dict[str, Any] = Body(...)):
     return ApiEnvelope({"predictions": []})
 
 # --- Store ---
-@app.get('/v1/store/products', summary='商品列表')
+@app.get('/v1/store/products', summary='stub')
 async def store_products(page: int = Query(1, ge=1), pageSize: int = Query(20, ge=1, le=200)):
     return ApiEnvelope({"items": [], "page": page, "pageSize": pageSize})
 
-@app.get('/v1/store/cart', summary='获取购物车')
+@app.get('/v1/store/cart', summary='stub')
 async def store_cart_get():
     return ApiEnvelope({"items": [], "total": 0, "currency": "CNY"})
 
-@app.post('/v1/store/cart/add', summary='加入购物车')
+@app.post('/v1/store/cart/add', summary='stub')
 async def store_cart_add(payload: Dict[str, Any] = Body(...)):
     audit('cart.add')
     return ApiEnvelope({})
 
-@app.put('/v1/store/cart/{itemId}', summary='更新购物车条目')
+@app.put('/v1/store/cart/{itemId}', summary='stub')
 async def store_cart_update(itemId: str = Path(...), payload: Dict[str, Any] = Body(...)):
     audit('cart.update', itemId=itemId)
     return ApiEnvelope({})
 
-@app.delete('/v1/store/cart/{itemId}', summary='移除购物车条目')
+@app.delete('/v1/store/cart/{itemId}', summary='stub')
 async def store_cart_delete(itemId: str = Path(...)):
     audit('cart.remove', itemId=itemId)
     return ApiEnvelope({})
 
-@app.post('/v1/store/purchase', summary='购物车结算')
+@app.post('/v1/store/purchase', summary='stub')
 async def store_purchase():
     audit('store.purchase')
     PURCHASES_TOTAL.inc()

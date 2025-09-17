@@ -11,18 +11,20 @@ const checks = [
   { key: 'wallet', url: '/api/users/wallet' },
 ] as const;
 
+type Result = { ok: boolean; status?: number; ms?: number; error?: string; detail?: string };
+
 export default function HealthPage(){
-  const [results, setResults] = useState<Record<string, { ok: boolean; status?: number; ms?: number; error?: string; detail?: string }>>({});
+  const [results, setResults] = useState<Record<string, Result>>({});
   const [running, setRunning] = useState(false);
 
   async function runBasic(){
     setRunning(true);
-    const out: typeof results = {} as any;
+    const out: Record<string, Result> = {};
     for (const c of checks) {
       const t0 = Date.now();
       try {
         const res = await fetch(c.url, { cache: 'no-store' });
-        out[c.key] = { ok: res.ok, status: res.status, ms: Date.now() - t0 };
+        out[c.key] = { ok: res.ok, status: (res as any).status, ms: Date.now() - t0 };
       } catch (e: any) {
         out[c.key] = { ok: false, error: e?.message, ms: Date.now() - t0 };
       }
@@ -35,7 +37,7 @@ export default function HealthPage(){
     const t0 = Date.now();
     try {
       const res = await fetch('/me', { cache: 'no-store' });
-      const redirected = (res.redirected || (res.url && new URL(res.url, location.origin).pathname.startsWith('/login')));
+      const redirected = (res.redirected || (!!res.url && new URL(res.url, location.origin).pathname.startsWith('/login')));
       setResults(prev => ({ ...prev, protected: { ok: redirected, status: (res as any).status, ms: Date.now() - t0, detail: redirected ? '未登录时跳转登录页' : '未跳转，可能已登录' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, protected: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
@@ -60,11 +62,32 @@ export default function HealthPage(){
     try {
       await fetch('/api/auth/logout');
       const r2 = await fetch('/me', { cache: 'no-store' });
-      const redirected = (r2.redirected || (r2.url && new URL(r2.url, location.origin).pathname.startsWith('/login')));
+      const redirected = (r2.redirected || (!!r2.url && new URL(r2.url, location.origin).pathname.startsWith('/login')));
       setResults(prev => ({ ...prev, logout: { ok: redirected, status: (r2 as any).status, ms: Date.now() - t0, detail: redirected ? '已登出' : '仍为登录态' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, logout: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
+  }
+
+  function downloadReport(){
+    try {
+      const blob = new Blob([JSON.stringify({ ts: Date.now(), results }, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `health-report-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch {}
+  }
+
+  async function runAll(){
+    await runBasic();
+    await checkProtected();
+    await doLogin();
+    await runBasic();
+    await doLogout();
+    await checkProtected();
   }
 
   return (
@@ -77,6 +100,8 @@ export default function HealthPage(){
           <Button variant="ghost" onClick={checkProtected}>受保护路径</Button>
           <Button variant="ghost" onClick={doLogin}>模拟登录</Button>
           <Button variant="ghost" onClick={doLogout}>登出并验证</Button>
+          <Button variant="ghost" onClick={downloadReport}>下载报告(JSON)</Button>
+          <Button variant="ghost" onClick={runAll}>一键全链路</Button>
         </div>
       </Card>
       <div className="grid sm:grid-cols-2 gap-3">
