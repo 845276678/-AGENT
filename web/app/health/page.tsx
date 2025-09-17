@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Card from '@/src/components/Card';
 import Button from '@/src/components/Button';
 
+type Result = { ok: boolean; status?: number; ms?: number; error?: string; detail?: string };
 const checks = [
   { key: 'agents', url: '/api/agents' },
   { key: 'ideas', url: '/api/ideas' },
@@ -11,11 +12,10 @@ const checks = [
   { key: 'wallet', url: '/api/users/wallet' },
 ] as const;
 
-type Result = { ok: boolean; status?: number; ms?: number; error?: string; detail?: string };
-
 export default function HealthPage(){
   const [results, setResults] = useState<Record<string, Result>>({});
   const [running, setRunning] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   async function runBasic(){
     setRunning(true);
@@ -38,7 +38,7 @@ export default function HealthPage(){
     try {
       const res = await fetch('/me', { cache: 'no-store' });
       const redirected = (res.redirected || (!!res.url && new URL(res.url, location.origin).pathname.startsWith('/login')));
-      setResults(prev => ({ ...prev, protected: { ok: redirected, status: (res as any).status, ms: Date.now() - t0, detail: redirected ? '未登录时跳转登录页' : '未跳转，可能已登录' } }));
+      setResults(prev => ({ ...prev, protected: { ok: !!redirected, status: (res as any).status, ms: Date.now() - t0, detail: redirected ? '未登录时跳转登录页' : '未跳转，可能已登录' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, protected: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
@@ -63,7 +63,7 @@ export default function HealthPage(){
       await fetch('/api/auth/logout');
       const r2 = await fetch('/me', { cache: 'no-store' });
       const redirected = (r2.redirected || (!!r2.url && new URL(r2.url, location.origin).pathname.startsWith('/login')));
-      setResults(prev => ({ ...prev, logout: { ok: redirected, status: (r2 as any).status, ms: Date.now() - t0, detail: redirected ? '已登出' : '仍为登录态' } }));
+      setResults(prev => ({ ...prev, logout: { ok: !!redirected, status: (r2 as any).status, ms: Date.now() - t0, detail: redirected ? '已登出' : '仍为登录态' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, logout: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
@@ -101,6 +101,7 @@ export default function HealthPage(){
           <Button variant="ghost" onClick={doLogin}>模拟登录</Button>
           <Button variant="ghost" onClick={doLogout}>登出并验证</Button>
           <Button variant="ghost" onClick={downloadReport}>下载报告(JSON)</Button>
+          <Button variant="ghost" onClick={() => setShowDetails(v => !v)}>{showDetails ? '隐藏详情' : '显示详情'}</Button>
           <Button variant="ghost" onClick={runAll}>一键全链路</Button>
         </div>
       </Card>
@@ -117,6 +118,12 @@ export default function HealthPage(){
               </div>
               {r?.detail && <div className="text-xs text-slate-500 mt-1">{r.detail}</div>}
               {r?.error && <div className="text-xs text-slate-500 mt-1">{r.error}</div>}
+              {showDetails && (
+                <div className="mt-2">
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(r, null, 2)}</pre>
+                  <button className="underline text-xs" onClick={() => navigator.clipboard.writeText(JSON.stringify(r))}>复制</button>
+                </div>
+              )}
             </Card>
           );
         })}

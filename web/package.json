@@ -1,29 +1,29 @@
-{
-    "name": "web",
-    "version": "0.1.0",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "lint": "next lint",
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "gen": "openapi-typescript ../docs/api/openapi.yaml -o ./src/types.ts"
-    },
-    "dependencies": {
-        "next": "^14.2.3",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1"
-    },
-    "devDependencies": {
-        "@types/node": "^20.14.9",
-        "@types/react": "^18.2.66",
-        "autoprefixer": "^10.4.20",
-        "eslint": "^8.57.1",
-        "eslint-config-next": "^14.2.32",
-        "openapi-typescript": "^7.0.0",
-        "postcss": "^8.4.40",
-        "tailwindcss": "^3.4.9",
-        "typescript": "^5.5.4"
-    }
+﻿{
+    "name":  "web",
+    "version":  "0.1.0",
+    "private":  true,
+    "type":  "module",
+    "scripts": {"lint:ci":"next lint --max-warnings=0",
+                    "lint":  "next lint",
+                    "dev":  "next dev",
+                    "build":  "next build",
+                    "start":  "next start",
+                    "gen":  "openapi-typescript ../docs/api/openapi.yaml -o ./src/types.ts"
+                },
+    "dependencies":  {
+                         "next":  "^14.2.3",
+                         "react":  "^18.3.1",
+                         "react-dom":  "^18.3.1"
+                     },
+    "devDependencies":  {
+                            "@types/node":  "^20.14.9",
+                            "@types/react":  "^18.2.66",
+                            "autoprefixer":  "^10.4.20",
+                            "eslint":  "^8.57.1",
+                            "eslint-config-next":  "^14.2.32",
+                            "openapi-typescript":  "^7.0.0",
+                            "postcss":  "^8.4.40",
+                            "tailwindcss":  "^3.4.9",
+                            "typescript":  "^5.5.4"
+                        }
 }
