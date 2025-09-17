@@ -1,12 +1,10 @@
-﻿import { EmptyState } from '@/src/components/States';
+﻿import { getJson } from '@/src/lib/pageData';
+import { EmptyState, ErrorAlert } from '@/src/components/States';
 
-async function fetchCart(){
-  const res = await fetch('/api/store/cart', { cache: 'no-store' });
-  return res.json();
-}
 export default async function CartPage(){
-  const json = await fetchCart();
-  const cart = json?.data || { items: [] };
+  const r = await getJson<any>('/api/store/cart');
+  if (!r.ok) return (<div className="mt-4"><ErrorAlert message={`加载失败 (${r.status})`} /></div>);
+  const cart = (r.data as any)?.data || { items: [] };
   const items = cart.items || [];
   return (
     <div>

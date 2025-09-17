@@ -1,12 +1,10 @@
-﻿import { EmptyState } from '@/src/components/States';
+﻿import { getJson } from '@/src/lib/pageData';
+import { EmptyState, ErrorAlert } from '@/src/components/States';
 
-async function fetchProducts(){
-  const res = await fetch('/api/store/products', { cache: 'no-store' });
-  return res.json();
-}
 export default async function StorePage(){
-  const json = await fetchProducts();
-  const items = json?.data?.items || [];
+  const r = await getJson<any>('/api/store/products');
+  if (!r.ok) return (<div className="mt-4"><ErrorAlert message={`加载失败 (${r.status})`} /></div>);
+  const items = (r.data as any)?.data?.items || [];
   return (
     <div>
       <h1 className="text-xl font-semibold mb-3">商品列表</h1>
