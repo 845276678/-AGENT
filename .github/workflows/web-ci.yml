@@ -19,5 +19,5 @@ jobs:
         run: npm -w web install
       - name: Generate API types
         run: npm -w web run gen
-      - name: Build web
+      - name: Lint & Build web
         run: npm -w web run build
