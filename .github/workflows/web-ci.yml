@@ -16,7 +16,6 @@ jobs:
           cache: npm
       - name: Install web deps
         run: npm -w web install
-      - name: Generate API types
-        run: npm -w web run gen
+      - name: Generate API types\n        run: npm -w web run gen\n      - name: Typecheck\n        run: npm -w web run typecheck
       - name: Lint & Build web
         run: npm -w web run build

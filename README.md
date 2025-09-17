@@ -66,3 +66,21 @@ CI 与测试
 - 访问 http://localhost:3000/health
 - 可执行 基础检测/受保护路径/模拟登录/登出/一键全链路
 - 支持下载 JSON 检测报告
+
+## 生产部署
+
+- Docker Compose（推荐本地一体化演示）
+  - `docker compose up -d api web`
+  - 浏览器访问 http://localhost:3000
+- 纯 Web 容器
+  - 在 `web/` 构建镜像：`docker build -t ai-agent-web:prod web`
+  - 运行：`docker run -p 3000:3000 -e NEXT_PUBLIC_API_BASE_URL=http://<api-host>:8000/v1 ai-agent-web:prod`
+- 环境变量
+  - `NEXT_PUBLIC_API_BASE_URL`（必填）：后端 API 基础地址（/v1）
+  - `NEXT_PUBLIC_SITE_URL`（建议）：站点对外地址（用于 sitemap/robots）
+  - `NEXT_ENABLE_HSTS`（可选）：为 1 时发送 HSTS 响应头（仅在 HTTPS 场景启用）
+
+安全加固要点（已默认启用）
+- 统一安全响应头（CSP/HSTS/XFO/NoSniff/Referrer-Policy 等）
+- 生产环境下 auth_token Cookie `secure=true` + `httpOnly` + `sameSite=lax`
+- Next.js 构建产物 `output: 'standalone'`，便于极简运行容器

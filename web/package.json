@@ -1,9 +1,9 @@
-{
+﻿{
     "name":  "web",
     "version":  "0.1.0",
     "private":  true,
     "type":  "module",
-    "scripts":  {
+    "scripts": {"typecheck":"tsc -p tsconfig.json --noEmit","startprod":"next start -p 3000",
                     "lint:ci":  "next lint --max-warnings=0",
                     "lint":  "next lint",
                     "dev":  "next dev",

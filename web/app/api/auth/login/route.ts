@@ -7,7 +7,7 @@ export async function POST(req: NextRequest){
   const token = (data as any)?.data?.token || (data as any)?.token;
   const res = NextResponse.json(data, { status: response.status });
   if (token) {
-    res.cookies.set('auth_token', token, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 7 });
+    res.cookies.set('auth_token', token, { , secure: process.env.NODE_ENV === 'production' });
   }
   return res;
 }
