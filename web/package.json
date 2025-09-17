@@ -1,4 +1,4 @@
-{
+﻿{
     "name":  "web",
     "version":  "0.1.0",
     "private":  true,
@@ -15,7 +15,6 @@
                          "react-dom":  "^18.3.1"
                      },
     "devDependencies":  {
-                            "@tailwindcss/line-clamp":  "^0.4.4",
                             "typescript":  "^5.5.4",
                             "@types/node":  "^20.14.9",
                             "@types/react":  "^18.2.66",

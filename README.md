@@ -1,4 +1,6 @@
-﻿# 项目概览
+﻿[![web-ci](https://github.com/845276678/-AGENT/actions/workflows/web-ci.yml/badge.svg?branch=main)](https://github.com/845276678/-AGENT/actions/workflows/web-ci.yml)
+
+# 项目概览
 
 本仓库包含 AI Agent 市场的产品、页面与技术文档。现已建立「单一真源」的 API 规范与工程文档骨架，支撑后续实现与协作。
 
