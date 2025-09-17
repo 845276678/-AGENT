@@ -11,21 +11,31 @@ function buildUrl(path: string, params?: any){
   return u.toString();
 }
 
-// Minimal fetch wrapper with timeout, returns { data, error, response }
-async function request<T>(method: string, path: keyof paths & string, opts: { headers?: Record<string,string>; body?: any; params?: any; timeoutMs?: number } = {}){
+function delay(ms: number){ return new Promise(res => setTimeout(res, ms)); }
+
+// Fetch wrapper with timeout + simple retry, returns { data, error, response }
+async function request<T>(method: string, path: keyof paths & string, opts: { headers?: Record<string,string>; body?: any; params?: any; timeoutMs?: number; retry?: number } = {}){
   const url = buildUrl(path, opts.params);
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), opts.timeoutMs ?? 10000);
-  try {
-    const res = await fetch(url, { method, headers: opts.headers, body: typeof opts.body === 'object' ? JSON.stringify(opts.body) : opts.body, signal: controller.signal });
-    let data: any = null;
-    try { data = await res.json(); } catch {}
-    return { data, response: res } as { data?: T; response: Response };
-  } catch (error) {
-    return { error, response: new Response(null, { status: 500 }) } as any;
-  } finally {
-    clearTimeout(id);
+  const timeoutMs = opts.timeoutMs ?? 10000;
+  const retry = Math.max(0, opts.retry ?? 1);
+  let attempt = 0;
+  while (attempt <= retry) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { method, headers: opts.headers, body: typeof opts.body === 'object' ? JSON.stringify(opts.body) : opts.body, signal: controller.signal });
+      clearTimeout(id);
+      let data: any = null;
+      try { data = await res.json(); } catch {}
+      if (!res.ok && attempt < retry && res.status >= 500) { attempt++; await delay(200 * attempt); continue; }
+      return { data, response: res } as { data?: T; response: Response };
+    } catch (error) {
+      clearTimeout(id);
+      if (attempt < retry) { attempt++; await delay(200 * attempt); continue; }
+      return { error, response: new Response(null, { status: 500 }) } as any;
+    }
   }
+  return { error: new Error('request failed after retries'), response: new Response(null, { status: 500 }) } as any;
 }
 
 export const api = {

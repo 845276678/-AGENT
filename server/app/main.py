@@ -7,7 +7,8 @@ from .errors import http_exception_handler, validation_exception_handler, generi
 from .logging_conf import setup_logging
 from .rate_limit import RateLimitMiddleware
 from .idempotency import IdempotencyMiddleware
-from .observability import AccessLogMiddleware, PrometheusMiddleware, metrics_endpoint\nfrom .auth_enforce import AuthEnforceMiddleware
+from .observability import AccessLogMiddleware, PrometheusMiddleware, metrics_endpoint
+from .auth_enforce import AuthEnforceMiddleware
 from .audit import audit
 from .authz import require_owner_or_roles
 from .metrics import (
@@ -24,7 +25,9 @@ setup_middlewares(app)
 # Production middlewares
 app.add_middleware(AccessLogMiddleware)
 app.add_middleware(PrometheusMiddleware)
-app.add_middleware(AuthEnforceMiddleware)\napp.add_middleware(RateLimitMiddleware, limit_per_minute=120)\napp.add_middleware(IdempotencyMiddleware)
+app.add_middleware(AuthEnforceMiddleware)
+app.add_middleware(RateLimitMiddleware, limit_per_minute=120)
+app.add_middleware(IdempotencyMiddleware)
 
 # Exception handlers
 from fastapi.exceptions import RequestValidationError
@@ -72,9 +75,11 @@ async def users_get_profile(userId: str = Path(...)):
     return ApiEnvelope({"profile": {"username": "demo", "bio": "", "location": "", "avatarUrl": None}})
 
 @app.put('/v1/users/{userId}/profile', summary='stub')
-async def users_update_profile(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):\n    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
+async def users_update_profile(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
+    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     from fastapi import HTTPException
-    principal = getattr(request.state, 'principal', None) if request is not None else None\n    if principal and principal != userId:
+    principal = getattr(request.state, 'principal', None) if request is not None else None
+    if principal and principal != userId:
         raise HTTPException(status_code=403, detail='Forbidden')
     audit('users.updateProfile', userId=userId)
     return ApiEnvelope({})
@@ -97,7 +102,8 @@ async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any]
     WALLET_WITHDRAW_TOTAL.inc()
     audit('wallet.withdraw', userId=userId, amount=payload.get('amount'))
     return ApiEnvelope({})
-async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):\n    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
+async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
+    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     audit('wallet.withdraw', userId=userId, amount=payload.get('amount'))
     WALLET_WITHDRAW_TOTAL.inc()
     return ApiEnvelope({})

@@ -1,14 +1,17 @@
 ﻿import Breadcrumbs from '@/src/components/Breadcrumbs';
 import ProfileEditor from '@/src/components/ProfileEditor';
-
-async function fetchProfile(){
-  const res = await fetch('/api/users/profile', { cache: 'no-store' });
-  return res.json();
-}
+import { getJson } from '@/src/lib/pageData';
+import { ErrorAlert } from '@/src/components/States';
 
 export default async function MePage(){
-  const json = await fetchProfile();
-  const profile = json?.data?.profile || {};
+  const r = await getJson<any>('/api/users/profile');
+  if (!r.ok) return (
+    <div>
+      <Breadcrumbs />
+      <ErrorAlert message={`加载用户信息失败（${r.status}）`} />
+    </div>
+  );
+  const profile = (r.data as any)?.data?.profile || {};
   return (
     <div>
       <Breadcrumbs />
