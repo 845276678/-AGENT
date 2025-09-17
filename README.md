@@ -52,3 +52,12 @@ CI 与测试
 
 文档导航
 - 详见 `docs/README.md` 与 `docs/checklist_content_completeness.md`
+
+## 本地开发（含 Mock API）
+
+- 启动后端 Mock（Node）：
+  - 在仓库根目录：`npm run devapi`（监听 http://localhost:8000）
+- 启动前端（Next）：
+  - 在仓库根目录：`npm run devweb`（打开 http://localhost:3000）
+- 自测页面：
+  - 打开 http://localhost:3000/health ，一键检测前端 API 代理连通性
