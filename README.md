@@ -61,3 +61,8 @@ CI 与测试
   - 在仓库根目录：`npm run devweb`（打开 http://localhost:3000）
 - 自测页面：
   - 打开 http://localhost:3000/health ，一键检测前端 API 代理连通性
+
+## 健康自测
+- 访问 http://localhost:3000/health
+- 可执行 基础检测/受保护路径/模拟登录/登出/一键全链路
+- 支持下载 JSON 检测报告
