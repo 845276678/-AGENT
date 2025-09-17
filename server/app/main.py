@@ -79,17 +79,24 @@ async def users_update_profile(userId: str = Path(...), payload: Dict[str, Any] 
     audit('users.updateProfile', userId=userId)
     return ApiEnvelope({})
 
-@app.get('/v1/users/{userId}/wallet', summary='获取钱包信息'), summary='获取钱包信息'), summary='获取钱包信息')
+# --- Wallet ---
+@app.get('/v1/users/{userId}/wallet', summary='获取钱包信息')
 async def users_get_wallet(userId: str = Path(...)):
     return ApiEnvelope({"wallet": {"balance": 0, "currency": "CNY"}})
 
 @app.post('/v1/users/{userId}/wallet/deposit', summary='充值')
-async def users_wallet_deposit(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):\n    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
-    audit('wallet.deposit', userId=userId, amount=payload.get('amount'))
+async def users_wallet_deposit(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
+    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     WALLET_DEPOSIT_TOTAL.inc()
+    audit('wallet.deposit', userId=userId, amount=payload.get('amount'))
     return ApiEnvelope({})
 
 @app.post('/v1/users/{userId}/wallet/withdraw', summary='提现')
+async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):
+    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
+    WALLET_WITHDRAW_TOTAL.inc()
+    audit('wallet.withdraw', userId=userId, amount=payload.get('amount'))
+    return ApiEnvelope({})
 async def users_wallet_withdraw(userId: str = Path(...), payload: Dict[str, Any] = Body(...), request: __import__('fastapi').Request = None):\n    require_owner_or_roles(request, owner_id=userId, roles=('admin',))
     audit('wallet.withdraw', userId=userId, amount=payload.get('amount'))
     WALLET_WITHDRAW_TOTAL.inc()

@@ -5,7 +5,9 @@
                        "sdk",
                        "web"
                    ],
-    "scripts": {"devapi":"node dev-api/server.mjs","devweb":"npm -w web run dev",
+    "scripts": {"devapi":"node dev-api/server.mjs","devweb":"npm -w web run dev","devall":"powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev-all.ps1","stop":"powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-ports.ps1",
+                    "devapi":  "node dev-api/server.mjs",
+                    "devweb":  "npm -w web run dev",
                     "build":  "npm -w web run build",
                     "dev":  "npm -w web run dev"
                 }
