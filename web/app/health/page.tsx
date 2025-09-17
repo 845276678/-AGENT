@@ -16,6 +16,7 @@ export default function HealthPage(){
   const [results, setResults] = useState<Record<string, Result>>({});
   const [running, setRunning] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [metrics, setMetrics] = useState<{ counts: Record<string, number>; items: any[] } | null>(null);
 
   async function runBasic(){
     setRunning(true);
@@ -69,9 +70,9 @@ export default function HealthPage(){
     }
   }
 
-  function downloadReport(){
+  async function downloadReport(){
     try {
-      const blob = new Blob([JSON.stringify({ ts: Date.now(), results }, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ ts: Date.now(), results, metrics }, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `health-report-${Date.now()}.json`;
@@ -90,6 +91,9 @@ export default function HealthPage(){
     await checkProtected();
   }
 
+  async function loadMetrics(){ try { const r = await fetch('/api/metrics', { cache: 'no-store' }); const j = await r.json(); setMetrics(j?.data || null); } catch {} }
+  async function clearMetrics(){ try { await fetch('/api/metrics', { method: 'DELETE' }); setMetrics(null); } catch {} }
+
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-semibold">健康自测</h1>
@@ -105,6 +109,33 @@ export default function HealthPage(){
           <Button variant="ghost" onClick={runAll}>一键全链路</Button>
         </div>
       </Card>
+
+      <Card className="space-y-3">
+        <div className="text-sm text-slate-500">Metrics 概览（最近事件统计）</div>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={loadMetrics}>刷新指标</Button>
+          <Button variant="ghost" onClick={clearMetrics}>清空指标</Button>
+        </div>
+        {metrics ? (
+          <div>
+            <div className="text-sm">req:ok = {metrics.counts?.['req:ok'] || 0}，req:error = {metrics.counts?.['req:error'] || 0}</div>
+            <div className="text-xs text-slate-500">最近事件：</div>
+            <div className="text-xs space-y-1 mt-1">
+              {(metrics.items || []).slice(0,8).map((it: any) => (
+                <div key={it.id || it.ts} className="flex items-center gap-2">
+                  <span className="w-20">{new Date(it.ts).toLocaleTimeString()}</span>
+                  <span className="w-20">{it.event}</span>
+                  <span className="flex-1 truncate">{it.props?.url || it.href || it.route || ''}</span>
+                  <span className="w-16 text-right">{it.props?.status || ''}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-slate-500">暂无指标数据，点击“刷新指标”</div>
+        )}
+      </Card>
+
       <div className="grid sm:grid-cols-2 gap-3">
         {Object.entries(results).map(([key, r]) => {
           const color = r ? (r.ok ? 'text-green-600' : 'text-red-600') : 'text-slate-500';
