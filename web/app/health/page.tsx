@@ -3,7 +3,13 @@ import { useState } from 'react';
 import Card from '@/src/components/Card';
 import Button from '@/src/components/Button';
 
-const checks = [\n  { key: 'agents', url: '/api/agents' },\n  { key: 'ideas', url: '/api/ideas' },\n  { key: 'products', url: '/api/store/products' },\n  { key: 'profile', url: '/api/users/profile' },\n  { key: 'wallet', url: '/api/users/wallet' },\n] as const;
+const checks = [
+  { key: 'agents', url: '/api/agents' },
+  { key: 'ideas', url: '/api/ideas' },
+  { key: 'products', url: '/api/store/products' },
+  { key: 'profile', url: '/api/users/profile' },
+  { key: 'wallet', url: '/api/users/wallet' },
+] as const;
 
 export default function HealthPage(){
   const [results, setResults] = useState<Record<string, { ok: boolean; status?: number; ms?: number; error?: string; detail?: string }>>({});
@@ -11,7 +17,7 @@ export default function HealthPage(){
 
   async function runBasic(){
     setRunning(true);
-    const out: typeof results = {};
+    const out: typeof results = {} as any;
     for (const c of checks) {
       const t0 = Date.now();
       try {
@@ -30,7 +36,7 @@ export default function HealthPage(){
     try {
       const res = await fetch('/me', { cache: 'no-store' });
       const redirected = (res.redirected || (res.url && new URL(res.url, location.origin).pathname.startsWith('/login')));
-      setResults(prev => ({ ...prev, protected: { ok: redirected, status: res.status, ms: Date.now() - t0, detail: redirected ? '未登录时跳转登录页' : '未跳转，可能已登录' } }));
+      setResults(prev => ({ ...prev, protected: { ok: redirected, status: (res as any).status, ms: Date.now() - t0, detail: redirected ? '未登录时跳转登录页' : '未跳转，可能已登录' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, protected: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
@@ -41,10 +47,9 @@ export default function HealthPage(){
     try {
       const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'demo@example.com', password: '123456' }) });
       const ok = res.ok;
-      // 再次访问 /me 期待 200 且非重定向
       const r2 = await fetch('/me', { cache: 'no-store' });
       const good = ok && !r2.redirected && new URL(r2.url, location.origin).pathname === '/me';
-      setResults(prev => ({ ...prev, login: { ok: good, status: r2.status, ms: Date.now() - t0, detail: good ? '已登录' : '登录失败' } }));
+      setResults(prev => ({ ...prev, login: { ok: good, status: (r2 as any).status, ms: Date.now() - t0, detail: good ? '已登录' : '登录失败' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, login: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
@@ -56,7 +61,7 @@ export default function HealthPage(){
       await fetch('/api/auth/logout');
       const r2 = await fetch('/me', { cache: 'no-store' });
       const redirected = (r2.redirected || (r2.url && new URL(r2.url, location.origin).pathname.startsWith('/login')));
-      setResults(prev => ({ ...prev, logout: { ok: redirected, status: r2.status, ms: Date.now() - t0, detail: redirected ? '已登出' : '仍为登录态' } }));
+      setResults(prev => ({ ...prev, logout: { ok: redirected, status: (r2 as any).status, ms: Date.now() - t0, detail: redirected ? '已登出' : '仍为登录态' } }));
     } catch (e: any) {
       setResults(prev => ({ ...prev, logout: { ok: false, error: e?.message, ms: Date.now() - t0 } }));
     }
